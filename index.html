@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8" />
-  <title>Magic Robot Chatbot</title>
+  <title>Abal Bot ভাই</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -27,7 +27,7 @@
       overflow: hidden;
     }
     header {
-      background: linear-gradient(90deg, #4285f4, #34a853);
+      background: linear-gradient(90deg, #ff4081, #7c4dff);
       padding: 20px;
       color: white;
       font-weight: 700;
@@ -126,9 +126,9 @@
 <body>
 
 <div class="container">
-  <header>Magic Robot</header>
+  <header>Abal Bot ভাই</header>
   <div id="chat">
-    <div class="bot message">হ্যালো! আমি Magic Robot 🤖। আপনি আমাকে কিছু লিখুন, আমি গুগল সার্চ করে টাইপ করে উত্তর দেবো।</div>
+    <div class="bot message">🤖 হ্যালো! আমি Abal Bot ভাই। আপনার যেকোনো প্রশ্ন লিখুন, আমি চেষ্টা করব উত্তর দিতে!</div>
   </div>
   <div id="input-area">
     <input id="query" type="text" placeholder="আপনার প্রশ্ন লিখুন..." autocomplete="off" />
@@ -196,7 +196,6 @@
     }
 
     tempDiv.innerHTML = finalHtml;
-
     if (isCode) {
       const pre = tempDiv.querySelector('pre');
       if (pre) addCopyButton(pre);
@@ -205,7 +204,7 @@
 
   async function doSearch(query) {
     appendMessage(query, 'user');
-    const loadingDiv = appendMessage('🔍 সার্চ চলছে... একটু অপেক্ষা করুন...', 'bot');
+    const loadingDiv = appendMessage('⏳ ভাবছি... একটু অপেক্ষা করুন...', 'bot');
 
     try {
       const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
@@ -220,38 +219,24 @@
       }
 
       if (!data.items || data.items.length === 0) {
-        typeText(appendMessage('', 'bot'), `😔 দুঃখিত, কোনো ফলাফল পাওয়া যায়নি।`);
+        typeText(appendMessage('', 'bot'), `😢 কিছুই পেলাম না ভাই... আরেকবার চেষ্টা করেন!`);
         return;
       }
 
       const item = data.items[0];
       const isCode = containsCodeKeyword(query);
       const message = isCode
-        ? item.snippet + "\n\n" + item.link
+        ? `${item.snippet}\n\n${item.link}`
         : `${item.title}\n\n${item.snippet}\n\n${item.link}`;
 
       typeText(appendMessage('', 'bot'), message, isCode);
 
     } catch (err) {
       loadingDiv.remove();
-      typeText(appendMessage('', 'bot'), `❌ সার্চ করতে গিয়ে সমস্যা হয়েছে।`);
+      typeText(appendMessage('', 'bot'), `❌ ভাই, ইন্টারনেট ল্যাগ দিচ্ছে মনে হয়!`);
       console.error(err);
     }
   }
 
   sendBtn.addEventListener('click', () => {
     const query = input.value.trim();
-    if (!query) return alert('অনুগ্রহ করে কিছু লিখুন।');
-    input.value = '';
-    doSearch(query);
-  });
-
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      sendBtn.click();
-    }
-  });
-</script>
-
-</body>
-</html>
