@@ -2,53 +2,61 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8" />
-  <title>বাংলা বুদ্ধিমান বট</title>
+  <title>বাংলা চালাক বট</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f0f0f5;
+      background: #eef2f5;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
     .chat-container {
-      width: 350px;
+      width: 360px;
       background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       border-radius: 10px;
-      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .chat-header {
-      background: #4CAF50;
+      background: #4caf50;
       color: white;
-      padding: 15px;
       text-align: center;
+      padding: 15px;
       font-weight: bold;
     }
 
     .chat-box {
       height: 400px;
-      overflow-y: auto;
       padding: 15px;
+      overflow-y: auto;
       background: #fdfdfd;
     }
 
     .chat-box p {
-      margin: 10px 0;
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
     }
 
     .user {
+      background: #d1ecf1;
       text-align: right;
-      color: #2196F3;
+      margin-left: auto;
+      color: #0c5460;
     }
 
     .bot {
+      background: #f1f1f1;
       text-align: left;
+      margin-right: auto;
       color: #333;
     }
 
@@ -59,17 +67,18 @@
 
     .chat-input input {
       flex: 1;
-      padding: 10px;
-      border: none;
+      padding: 12px;
       font-size: 16px;
+      border: none;
+      outline: none;
     }
 
     .chat-input button {
-      padding: 10px 15px;
-      border: none;
-      background: #4CAF50;
+      padding: 12px 16px;
+      background: #4caf50;
       color: white;
       font-size: 16px;
+      border: none;
       cursor: pointer;
     }
 
@@ -81,7 +90,7 @@
 <body>
 
   <div class="chat-container">
-    <div class="chat-header">🤖 বাংলা বট</div>
+    <div class="chat-header">🤖 বাংলা চালাক বট</div>
     <div id="chatBox" class="chat-box"></div>
     <div class="chat-input">
       <input id="userInput" placeholder="আপনার প্রশ্ন লিখুন..." />
@@ -90,38 +99,30 @@
   </div>
 
   <script>
-    function getBotReply(userInput) {
-      userInput = userInput.toLowerCase();
-      let name = localStorage.getItem("userName");
+    function getSmartReply(text) {
+      text = text.toLowerCase();
 
-      if (!name && userInput.includes("আমার নাম")) {
-        name = userInput.split("আমার নাম")[1]?.trim();
-        if (name) {
-          localStorage.setItem("userName", name);
-          return `ভালো লাগলো, ${name}! আমাকে কিছু জিজ্ঞেস করো।`;
-        } else {
-          return "তোমার নাম ঠিকঠাক বলো, যেমন: 'আমার নাম রাহুল'";
-        }
+      if (text.includes("তুমি কেমন") || text.includes("কেমন আছো")) {
+        return "আমি ভালো আছি, তুমি কেমন?";
+      }
+      if (text.includes("তোমার নাম")) {
+        return "আমার নাম বটু, আমি একটি ছোট বুদ্ধিমান বট!";
+      }
+      if (text.includes("কি করছো") || text.includes("কি হচ্ছে")) {
+        return "তোমার সাথে কথা বলছি!";
+      }
+      if (text.includes("ধন্যবাদ") || text.includes("thank you")) {
+        return "স্বাগতম! আরও কিছু জানতে চাও?";
+      }
+      if (text.includes("ভাল আছো") || text.includes("ভালো আছো")) {
+        return "হ্যাঁ, আমি একদম ভালো আছি!";
+      }
+      if (text.includes("তুমি কে") || text.includes("তুমি কি পারো")) {
+        return "আমি একটি সাধারন চালাক বট। আমি প্রশ্নের উত্তর দিতে পারি!";
       }
 
-      if (!name) {
-        return "তোমার নাম কী? দয়া করে বলো: 'আমার নাম রাহুল'";
-      }
-
-      // বুদ্ধিমান উত্তর
-      if (userInput.includes("তুমি কেমন") || userInput.includes("কেমন আছো")) {
-        return `আমি ভালো আছি, ${name}! তুমি কেমন?`;
-      }
-
-      if (userInput.includes("তুমি কে")) {
-        return `আমি বুদ্ধিমান বাংলা বট, ${name}! আমি সাহায্য করতে পারি।`;
-      }
-
-      if (userInput.includes("ধন্যবাদ")) {
-        return `স্বাগতম, ${name}! 😊`;
-      }
-
-      return `দুঃখিত ${name}, আমি সেটা বুঝতে পারিনি।`;
+      // ডিফল্ট উত্তর
+      return "দুঃখিত, আমি বুঝতে পারিনি। তুমি একটু ভিন্নভাবে বলো?";
     }
 
     function addMessage(sender, message) {
@@ -140,10 +141,10 @@
 
       addMessage("user", userText);
 
-      const botReply = getBotReply(userText);
+      const botReply = getSmartReply(userText);
       setTimeout(() => {
         addMessage("bot", botReply);
-      }, 500);
+      }, 400);
 
       input.value = "";
     }
