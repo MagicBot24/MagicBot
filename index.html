@@ -48,6 +48,7 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
+      scroll-behavior: smooth;
     }
     .message {
       max-width: 75%;
@@ -57,6 +58,8 @@
       line-height: 1.3;
       white-space: pre-wrap;
       word-wrap: break-word;
+      word-break: break-word;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .user {
       background: #4285f4;
@@ -69,7 +72,14 @@
       color: #333;
       align-self: flex-start;
       border-bottom-left-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .bot a {
+      color: #1a0dab;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .bot a:hover {
+      text-decoration: underline;
     }
 
     /* Input area */
@@ -153,10 +163,21 @@
   const input = document.getElementById('query');
   const sendBtn = document.getElementById('sendBtn');
 
+  function linkify(text) {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlPattern, url => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    });
+  }
+
   function appendMessage(text, sender = 'bot') {
     const div = document.createElement('div');
     div.className = `message ${sender}`;
-    div.textContent = text;
+    if(sender === 'bot'){
+      div.innerHTML = linkify(text);
+    } else {
+      div.textContent = text;
+    }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
   }
@@ -170,9 +191,9 @@
       const response = await fetch(url);
       const data = await response.json();
 
-      // Remove the loading bot message
+      // Remove last bot loading message
       const botMsgs = chat.querySelectorAll('.bot.message');
-      botMsgs[botMsgs.length - 1].remove();
+      if(botMsgs.length > 0) botMsgs[botMsgs.length - 1].remove();
 
       if (data.error) {
         appendMessage(`Error: ${data.error.message}`, 'bot');
@@ -183,10 +204,9 @@
         return;
       }
 
-      // সাজিয়ে আউটপুট বানাও
       let output = '';
-      data.items.forEach((item, i) => {
-        output += `📚 ${item.title}\n📝 ${item.snippet}\n🔗 ${item.link}\n\n`;
+      data.items.forEach(item => {
+        output += `📚 <strong>${item.title}</strong>\n📝 ${item.snippet}\n🔗 ${item.link}\n\n`;
       });
 
       appendMessage(output.trim(), 'bot');
