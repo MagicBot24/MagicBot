@@ -86,6 +86,15 @@
       border-radius: 8px;
     }
 
+    pre code {
+      background: #f4f4f4;
+      padding: 10px;
+      display: block;
+      border-radius: 6px;
+      font-family: monospace;
+      overflow-x: auto;
+    }
+
     #input-area {
       display: flex;
       padding: 15px 20px;
@@ -149,10 +158,25 @@
   const input = document.getElementById('query');
   const sendBtn = document.getElementById('sendBtn');
 
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function detectCodeBlocks(text) {
+    return text.replace(/```([\s\S]*?)```/g, (match, code) => {
+      return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
+    });
+  }
+
   function appendMessage(text, sender = 'bot') {
     const div = document.createElement('div');
     div.className = `message ${sender}`;
-    div.innerHTML = text;
+    div.innerHTML = detectCodeBlocks(text);
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
   }
@@ -176,7 +200,7 @@
       const response = await fetch(url);
       const data = await response.json();
 
-      // Remove loading message
+      // Remove last loading message
       const botMsgs = chat.querySelectorAll('.bot.message');
       if (botMsgs.length > 0) botMsgs[botMsgs.length - 1].remove();
 
