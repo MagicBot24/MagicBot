@@ -1,242 +1,106 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <title>Abal Bot ভাই</title>
+  <meta charset="UTF-8">
+  <title>Google Search Bot ভাই</title>
   <style>
-    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-      color: #333;
-    }
-    .container {
-      width: 600px;
-      max-width: 95vw;
-      margin-top: 30px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    header {
-      background: linear-gradient(90deg, #ff4081, #7c4dff);
-      padding: 20px;
-      color: white;
-      font-weight: 700;
-      font-size: 1.8rem;
-      text-align: center;
-    }
-    #chat {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #e9ebee;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      scroll-behavior: smooth;
-    }
-    .message {
-      max-width: 90%;
-      padding: 12px 18px;
-      border-radius: 18px;
-      font-size: 1rem;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      word-break: break-word;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .user {
-      background: #4285f4;
-      color: white;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-    .bot {
-      background: #f1f0f0;
-      color: #333;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-    pre {
-      margin: 10px 0;
-      position: relative;
-    }
-    pre code {
+      font-family: Arial, sans-serif;
       background: #f4f4f4;
-      padding: 10px;
-      display: block;
-      border-radius: 6px;
-      font-family: monospace;
-      overflow-x: auto;
-    }
-    .copy-btn {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      background: #4285f4;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      font-size: 0.8rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .copy-btn:hover {
-      background: #3367d6;
-    }
-    #input-area {
       display: flex;
-      padding: 15px 20px;
-      border-top: 1px solid #ddd;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #333;
+    }
+    .chat-box {
+      width: 100%;
+      max-width: 700px;
       background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    #query {
-      flex: 1;
-      padding: 12px 18px;
+    input[type="text"] {
+      width: 80%;
+      padding: 12px;
       font-size: 1rem;
-      border-radius: 30px;
       border: 1px solid #ccc;
+      border-radius: 5px;
     }
-    #sendBtn {
-      background: #4285f4;
-      border: none;
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: #4285f4;
       color: white;
-      font-weight: 700;
-      padding: 0 25px;
-      margin-left: 12px;
-      border-radius: 30px;
+      border: none;
+      border-radius: 5px;
+      margin-left: 10px;
       cursor: pointer;
     }
-    #sendBtn:hover {
-      background: #3367d6;
+    #searchResults {
+      margin-top: 20px;
+    }
+    .result {
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #fafafa;
+      border-left: 4px solid #7c4dff;
+    }
+    .result h3 {
+      margin: 0;
+    }
+    .result a {
+      color: #4285f4;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <header>Abal Bot ভাই</header>
-  <div id="chat">
-    <div class="bot message">🤖 হ্যালো! আমি Abal Bot ভাই। আপনার যেকোনো প্রশ্ন লিখুন, আমি চেষ্টা করব উত্তর দিতে!</div>
+  <h1>Abal Bot ভাই (Google Search)</h1>
+
+  <div class="chat-box">
+    <input type="text" id="queryInput" placeholder="প্রশ্ন লিখুন..." />
+    <button onclick="searchGoogle()">Search</button>
+    <div id="searchResults"></div>
   </div>
-  <div id="input-area">
-    <input id="query" type="text" placeholder="আপনার প্রশ্ন লিখুন..." autocomplete="off" />
-    <button id="sendBtn">Send</button>
-  </div>
-</div>
 
-<script>
-  const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
-  const CX = "b7013f3574abc40c3";
+  <script>
+    const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
+    const CX = "b7013f3574abc40c3";
 
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('query');
-  const sendBtn = document.getElementById('sendBtn');
+    async function searchGoogle() {
+      const query = document.getElementById("queryInput").value.trim();
+      const resultsDiv = document.getElementById("searchResults");
+      resultsDiv.innerHTML = "";
 
-  function containsCodeKeyword(query) {
-    const keywords = ['code', 'example', 'syntax', 'html', 'css', 'javascript', 'js', 'function', 'loop', 'table'];
-    return keywords.some(word => query.toLowerCase().includes(word));
-  }
+      if (!query) return;
 
-  function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;")
-               .replace(/</g, "&lt;")
-               .replace(/>/g, "&gt;");
-  }
+      resultsDiv.innerHTML = "<p>Searching...</p>";
 
-  function appendMessage(text, sender = 'bot') {
-    const div = document.createElement('div');
-    div.className = `message ${sender}`;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    return div;
-  }
+      try {
+        const response = await fetch(`https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`);
+        const data = await response.json();
 
-  function addCopyButton(preElement) {
-    const btn = document.createElement('button');
-    btn.className = 'copy-btn';
-    btn.textContent = 'Copy';
-    btn.onclick = () => {
-      navigator.clipboard.writeText(preElement.querySelector('code').innerText);
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy', 2000);
-    };
-    preElement.appendChild(btn);
-  }
-
-  async function typeText(element, text, isCode = false, delay = 15) {
-    let finalHtml;
-    if (isCode) {
-      const escaped = escapeHtml(text);
-      finalHtml = `<pre><code>${escaped}</code></pre>`;
-    } else {
-      finalHtml = text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`);
-    }
-
-    let i = 0;
-    const tempDiv = document.createElement('div');
-    element.appendChild(tempDiv);
-
-    while (i < finalHtml.length) {
-      tempDiv.innerHTML = finalHtml.slice(0, i + 1);
-      i++;
-      await new Promise(res => setTimeout(res, delay));
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    tempDiv.innerHTML = finalHtml;
-    if (isCode) {
-      const pre = tempDiv.querySelector('pre');
-      if (pre) addCopyButton(pre);
-    }
-  }
-
-  async function doSearch(query) {
-    appendMessage(query, 'user');
-    const loadingDiv = appendMessage('⏳ ভাবছি... একটু অপেক্ষা করুন...', 'bot');
-
-    try {
-      const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      loadingDiv.remove();
-
-      if (data.error) {
-        typeText(appendMessage('', 'bot'), `⚠️ ত্রুটি: ${data.error.message}`);
-        return;
+        if (data.items && data.items.length > 0) {
+          resultsDiv.innerHTML = data.items.map(item => `
+            <div class="result">
+              <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+              <p>${item.snippet}</p>
+            </div>
+          `).join('');
+        } else {
+          resultsDiv.innerHTML = "<p>কোনো ফলাফল পাওয়া যায়নি।</p>";
+        }
+      } catch (err) {
+        console.error(err);
+        resultsDiv.innerHTML = "<p>সার্ভারে কোনো সমস্যা হয়েছে।</p>";
       }
-
-      if (!data.items || data.items.length === 0) {
-        typeText(appendMessage('', 'bot'), `😢 কিছুই পেলাম না ভাই... আরেকবার চেষ্টা করেন!`);
-        return;
-      }
-
-      const item = data.items[0];
-      const isCode = containsCodeKeyword(query);
-      const message = isCode
-        ? `${item.snippet}\n\n${item.link}`
-        : `${item.title}\n\n${item.snippet}\n\n${item.link}`;
-
-      typeText(appendMessage('', 'bot'), message, isCode);
-
-    } catch (err) {
-      loadingDiv.remove();
-      typeText(appendMessage('', 'bot'), `❌ ভাই, ইন্টারনেট ল্যাগ দিচ্ছে মনে হয়!`);
-      console.error(err);
     }
-  }
+  </script>
 
-  sendBtn.addEventListener('click', () => {
-    const query = input.value.trim();
+</body>
+</html>
