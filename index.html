@@ -144,6 +144,11 @@
     });
   }
 
+  function extractLinks(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, url => `<a href="${url}" target="_blank">${url}</a>`);
+  }
+
   function appendMessage(text, sender = 'bot') {
     const div = document.createElement('div');
     div.className = `message ${sender}`;
@@ -154,19 +159,20 @@
   }
 
   async function typeText(element, text, delay = 30) {
-    const processedText = detectCodeBlocks(text);
+    const codeProcessed = detectCodeBlocks(text);
+    const finalText = extractLinks(codeProcessed);
     let i = 0;
     const tempDiv = document.createElement('div');
     element.appendChild(tempDiv);
 
-    while (i < processedText.length) {
-      tempDiv.innerHTML = processedText.slice(0, i + 1);
+    while (i < finalText.length) {
+      tempDiv.innerHTML = finalText.slice(0, i + 1);
       i++;
       await new Promise(res => setTimeout(res, delay));
       chat.scrollTop = chat.scrollHeight;
     }
 
-    tempDiv.innerHTML = processedText;
+    tempDiv.innerHTML = finalText;
   }
 
   async function doSearch(query) {
@@ -191,8 +197,8 @@
       }
 
       const item = data.items[0];
-      const reply = `🔗 <strong>${item.title}</strong>\n\n${item.snippet}\n\n<a href="${item.link}" target="_blank">বিস্তারিত পড়ুন</a>`;
-      typeText(appendMessage('', 'bot'), reply);
+      const text = `🔗 ${item.title}\n\n${item.snippet}\n\n${item.link}`;
+      typeText(appendMessage('', 'bot'), text);
 
     } catch (err) {
       loadingDiv.remove();
