@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <title>Magic Robot Chatbot</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -36,7 +34,6 @@
       font-size: 1.8rem;
       text-align: center;
     }
-
     #chat {
       flex: 1;
       padding: 20px;
@@ -70,22 +67,6 @@
       align-self: flex-start;
       border-bottom-left-radius: 4px;
     }
-    .bot a {
-      color: #1a0dab;
-      text-decoration: none;
-    }
-    .bot a:hover {
-      text-decoration: underline;
-    }
-
-    .result-card {
-      background: #ffffff;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-left: 4px solid #4285f4;
-      border-radius: 8px;
-    }
-
     pre code {
       background: #f4f4f4;
       padding: 10px;
@@ -94,7 +75,6 @@
       font-family: monospace;
       overflow-x: auto;
     }
-
     #input-area {
       display: flex;
       padding: 15px 20px;
@@ -121,7 +101,6 @@
     #sendBtn:hover {
       background: #3367d6;
     }
-
     @media (max-width: 640px) {
       .container {
         width: 95vw;
@@ -133,21 +112,13 @@
 
 <div class="container">
   <header>Magic Robot</header>
-
   <div id="chat">
-    <div class="bot message">হ্যালো! আমি Magic Robot 🤖। আপনি আমাকে কিছু লিখুন, আমি গুগল সার্চ করে উত্তর দেবো।</div>
+    <div class="bot message">হ্যালো! আমি Magic Robot 🤖। আপনি আমাকে কিছু লিখুন, আমি গুগল সার্চ করে টাইপ করে উত্তর দেবো।</div>
   </div>
-
   <div id="input-area">
     <input id="query" type="text" placeholder="আপনার প্রশ্ন লিখুন..." autocomplete="off" />
     <button id="sendBtn">Send</button>
   </div>
-</div>
-
-<!-- Hidden Google CSE -->
-<div style="display:none;">
-  <script async src="https://cse.google.com/cse.js?cx=b7013f3574abc40c3"></script>
-  <div class="gcse-search"></div>
 </div>
 
 <script>
@@ -176,49 +147,56 @@
   function appendMessage(text, sender = 'bot') {
     const div = document.createElement('div');
     div.className = `message ${sender}`;
-    div.innerHTML = detectCodeBlocks(text);
+    div.innerHTML = (sender === 'bot') ? '' : detectCodeBlocks(text);
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+    return div;
   }
 
-  function formatSearchResults(items) {
-    return items.slice(0, 3).map(item => `
-      <div class="result-card">
-        <strong>${item.title}</strong><br/>
-        <small>${item.snippet}</small><br/>
-        <a href="${item.link}" target="_blank">বিস্তারিত পড়ুন</a>
-      </div>
-    `).join('');
+  async function typeText(element, text, delay = 30) {
+    const processedText = detectCodeBlocks(text);
+    let i = 0;
+    const tempDiv = document.createElement('div');
+    element.appendChild(tempDiv);
+
+    while (i < processedText.length) {
+      tempDiv.innerHTML = processedText.slice(0, i + 1);
+      i++;
+      await new Promise(res => setTimeout(res, delay));
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    tempDiv.innerHTML = processedText;
   }
 
   async function doSearch(query) {
     appendMessage(query, 'user');
-    appendMessage('🔍 সার্চ চলছে... একটু অপেক্ষা করুন...', 'bot');
+    const loadingDiv = appendMessage('🔍 সার্চ চলছে... একটু অপেক্ষা করুন...', 'bot');
 
     try {
       const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
       const response = await fetch(url);
       const data = await response.json();
 
-      // Remove last loading message
-      const botMsgs = chat.querySelectorAll('.bot.message');
-      if (botMsgs.length > 0) botMsgs[botMsgs.length - 1].remove();
+      loadingDiv.remove();
 
       if (data.error) {
-        appendMessage(`<b>⚠️ ত্রুটি:</b> ${data.error.message}`, 'bot');
+        typeText(appendMessage('', 'bot'), `⚠️ ত্রুটি: ${data.error.message}`);
         return;
       }
 
       if (!data.items || data.items.length === 0) {
-        appendMessage('😔 দুঃখিত, কোনো ফলাফল পাওয়া যায়নি।', 'bot');
+        typeText(appendMessage('', 'bot'), `😔 দুঃখিত, কোনো ফলাফল পাওয়া যায়নি।`);
         return;
       }
 
-      const output = formatSearchResults(data.items);
-      appendMessage(output, 'bot');
+      const item = data.items[0];
+      const reply = `🔗 <strong>${item.title}</strong>\n\n${item.snippet}\n\n<a href="${item.link}" target="_blank">বিস্তারিত পড়ুন</a>`;
+      typeText(appendMessage('', 'bot'), reply);
 
     } catch (err) {
-      appendMessage('❌ সার্চ করতে গিয়ে সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'bot');
+      loadingDiv.remove();
+      typeText(appendMessage('', 'bot'), `❌ সার্চ করতে গিয়ে সমস্যা হয়েছে।`);
       console.error(err);
     }
   }
