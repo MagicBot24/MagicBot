@@ -1,154 +1,160 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <title>বাংলা চালাক বট</title>
+  <meta charset="UTF-8">
+  <title>স্মার্ট Google বট</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #eef2f5;
+      background: #f1f3f4;
+      margin: 0;
+      padding: 0;
       display: flex;
+      height: 100vh;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
     }
 
     .chat-container {
-      width: 360px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 400px;
+      max-width: 95vw;
+      height: 90vh;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
     .chat-header {
-      background: #4caf50;
-      color: white;
-      text-align: center;
+      background: #4285F4;
+      color: #fff;
       padding: 15px;
+      font-size: 18px;
+      text-align: center;
       font-weight: bold;
     }
 
     .chat-box {
-      height: 400px;
+      flex: 1;
       padding: 15px;
       overflow-y: auto;
-      background: #fdfdfd;
     }
 
-    .chat-box p {
-      margin: 8px 0;
-      padding: 8px 12px;
-      border-radius: 8px;
+    .chat-box .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 15px;
       max-width: 80%;
+      white-space: pre-line;
     }
 
     .user {
-      background: #d1ecf1;
-      text-align: right;
-      margin-left: auto;
-      color: #0c5460;
+      background: #dcf8c6;
+      align-self: flex-end;
     }
 
     .bot {
-      background: #f1f1f1;
-      text-align: left;
-      margin-right: auto;
-      color: #333;
+      background: #eaeaea;
+      align-self: flex-start;
     }
 
     .chat-input {
       display: flex;
-      border-top: 1px solid #ccc;
+      border-top: 1px solid #ddd;
     }
 
     .chat-input input {
       flex: 1;
       padding: 12px;
-      font-size: 16px;
       border: none;
+      font-size: 16px;
       outline: none;
     }
 
     .chat-input button {
-      padding: 12px 16px;
-      background: #4caf50;
+      background: #4285F4;
       color: white;
-      font-size: 16px;
+      padding: 12px 20px;
       border: none;
       cursor: pointer;
+      font-size: 16px;
     }
 
     .chat-input button:hover {
-      background: #45a049;
+      background: #3367d6;
     }
   </style>
 </head>
 <body>
 
-  <div class="chat-container">
-    <div class="chat-header">🤖 বাংলা চালাক বট</div>
-    <div id="chatBox" class="chat-box"></div>
-    <div class="chat-input">
-      <input id="userInput" placeholder="আপনার প্রশ্ন লিখুন..." />
-      <button onclick="handleSubmit()">পাঠান</button>
-    </div>
+<div class="chat-container">
+  <div class="chat-header">🤖 স্মার্ট Google বট</div>
+  <div class="chat-box" id="chatBox"></div>
+  <div class="chat-input">
+    <input id="userInput" type="text" placeholder="কিছু জিজ্ঞাসা করুন..." />
+    <button onclick="search()">🔍</button>
   </div>
+</div>
 
-  <script>
-    function getSmartReply(text) {
-      text = text.toLowerCase();
+<script>
+  const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
+  const CX = "35d2fe8be6b614613";
 
-      if (text.includes("তুমি কেমন") || text.includes("কেমন আছো")) {
-        return "আমি ভালো আছি, তুমি কেমন?";
+  const chatBox = document.getElementById("chatBox");
+
+  function addMessage(sender, text) {
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}`;
+    msg.textContent = text;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function addTypingEffect(callback) {
+    const typing = document.createElement("div");
+    typing.className = "message bot";
+    typing.textContent = "✍️ টাইপ করছে...";
+    chatBox.appendChild(typing);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    setTimeout(() => {
+      chatBox.removeChild(typing);
+      callback();
+    }, 1200);
+  }
+
+  async function search() {
+    const input = document.getElementById("userInput");
+    const query = input.value.trim();
+    if (!query) return;
+
+    addMessage("user", query);
+    input.value = "";
+
+    addTypingEffect(async () => {
+      const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.items && data.items.length > 0) {
+          let response = "";
+          const results = data.items.slice(0, 3); // টপ ৩ দেখাবে
+          results.forEach((item, index) => {
+            response += `📌 ${item.title}\n${item.snippet}\n🔗 ${item.link}\n\n`;
+          });
+          addMessage("bot", response.trim());
+        } else {
+          addMessage("bot", "😕 কিছু খুঁজে পাওয়া যায়নি।");
+        }
+      } catch (err) {
+        console.error(err);
+        addMessage("bot", "❌ সার্ভার বা API সমস্যা হয়েছে। পরে চেষ্টা করুন।");
       }
-      if (text.includes("তোমার নাম")) {
-        return "আমার নাম বটু, আমি একটি ছোট বুদ্ধিমান বট!";
-      }
-      if (text.includes("কি করছো") || text.includes("কি হচ্ছে")) {
-        return "তোমার সাথে কথা বলছি!";
-      }
-      if (text.includes("ধন্যবাদ") || text.includes("thank you")) {
-        return "স্বাগতম! আরও কিছু জানতে চাও?";
-      }
-      if (text.includes("ভাল আছো") || text.includes("ভালো আছো")) {
-        return "হ্যাঁ, আমি একদম ভালো আছি!";
-      }
-      if (text.includes("তুমি কে") || text.includes("তুমি কি পারো")) {
-        return "আমি একটি সাধারন চালাক বট। আমি প্রশ্নের উত্তর দিতে পারি!";
-      }
-
-      // ডিফল্ট উত্তর
-      return "দুঃখিত, আমি বুঝতে পারিনি। তুমি একটু ভিন্নভাবে বলো?";
-    }
-
-    function addMessage(sender, message) {
-      const chatBox = document.getElementById("chatBox");
-      const p = document.createElement("p");
-      p.className = sender;
-      p.innerText = message;
-      chatBox.appendChild(p);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function handleSubmit() {
-      const input = document.getElementById("userInput");
-      const userText = input.value.trim();
-      if (userText === "") return;
-
-      addMessage("user", userText);
-
-      const botReply = getSmartReply(userText);
-      setTimeout(() => {
-        addMessage("bot", botReply);
-      }, 400);
-
-      input.value = "";
-    }
-  </script>
+    });
+  }
+</script>
 
 </body>
 </html>
