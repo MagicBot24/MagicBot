@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>বাংলা বুদ্ধিমান বট</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f0f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 350px;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      height: 400px;
+      overflow-y: auto;
+      padding: 15px;
+      background: #fdfdfd;
+    }
+
+    .chat-box p {
+      margin: 10px 0;
+    }
+
+    .user {
+      text-align: right;
+      color: #2196F3;
+    }
+
+    .bot {
+      text-align: left;
+      color: #333;
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      font-size: 16px;
+    }
+
+    .chat-input button {
+      padding: 10px 15px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .chat-input button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">🤖 বাংলা বট</div>
+    <div id="chatBox" class="chat-box"></div>
+    <div class="chat-input">
+      <input id="userInput" placeholder="আপনার প্রশ্ন লিখুন..." />
+      <button onclick="handleSubmit()">পাঠান</button>
+    </div>
+  </div>
+
+  <script>
+    function getBotReply(userInput) {
+      userInput = userInput.toLowerCase();
+      let name = localStorage.getItem("userName");
+
+      if (!name && userInput.includes("আমার নাম")) {
+        name = userInput.split("আমার নাম")[1]?.trim();
+        if (name) {
+          localStorage.setItem("userName", name);
+          return `ভালো লাগলো, ${name}! আমাকে কিছু জিজ্ঞেস করো।`;
+        } else {
+          return "তোমার নাম ঠিকঠাক বলো, যেমন: 'আমার নাম রাহুল'";
+        }
+      }
+
+      if (!name) {
+        return "তোমার নাম কী? দয়া করে বলো: 'আমার নাম রাহুল'";
+      }
+
+      // বুদ্ধিমান উত্তর
+      if (userInput.includes("তুমি কেমন") || userInput.includes("কেমন আছো")) {
+        return `আমি ভালো আছি, ${name}! তুমি কেমন?`;
+      }
+
+      if (userInput.includes("তুমি কে")) {
+        return `আমি বুদ্ধিমান বাংলা বট, ${name}! আমি সাহায্য করতে পারি।`;
+      }
+
+      if (userInput.includes("ধন্যবাদ")) {
+        return `স্বাগতম, ${name}! 😊`;
+      }
+
+      return `দুঃখিত ${name}, আমি সেটা বুঝতে পারিনি।`;
+    }
+
+    function addMessage(sender, message) {
+      const chatBox = document.getElementById("chatBox");
+      const p = document.createElement("p");
+      p.className = sender;
+      p.innerText = message;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function handleSubmit() {
+      const input = document.getElementById("userInput");
+      const userText = input.value.trim();
+      if (userText === "") return;
+
+      addMessage("user", userText);
+
+      const botReply = getBotReply(userText);
+      setTimeout(() => {
+        addMessage("bot", botReply);
+      }, 500);
+
+      input.value = "";
+    }
+  </script>
+
+</body>
+</html>
