@@ -197,7 +197,6 @@
 
     tempDiv.innerHTML = finalHtml;
 
-    // If code, add copy button
     if (isCode) {
       const pre = tempDiv.querySelector('pre');
       if (pre) addCopyButton(pre);
@@ -247,4 +246,12 @@
     doSearch(query);
   });
 
-  input.addEventListener
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      sendBtn.click();
+    }
+  });
+</script>
+
+</body>
+</html>
