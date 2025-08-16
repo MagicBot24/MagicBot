@@ -1,163 +1,97 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Magic Robot - সহজ ভাষায় গুগল সার্চ</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    darkMode: 'class',
-  };
-</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Magic Robot - সহজ গল্পে Google Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center p-6">
 
-<h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
+  <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
 
-<div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
-  <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600"></div>
-  <div class="flex gap-2">
-    <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" />
-    <button id="sendBtn" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition">Send</button>
+  <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
+    <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600"></div>
+    <div class="flex gap-2">
+      <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" />
+      <button id="sendBtn" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition">Send</button>
+    </div>
   </div>
-</div>
 
 <script>
-const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";  // তোমার API KEY ঠিক আছে তো?
-const CSE_ID = "b7013f3574abc40c3";  // তোমার Custom Search Engine ID ঠিক আছে তো?
+  const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
+  const CSE_ID = "b7013f3574abc40c3";
 
-const chat = document.getElementById('chat');
-const input = document.getElementById('input');
-const sendBtn = document.getElementById('sendBtn');
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("sendBtn");
 
-function renderMessage(sender, text) {
-  const div = document.createElement('div');
-  div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap', 'break-words');
-  if(sender === 'user'){
-    div.classList.add('bg-cyan-600', 'text-white', 'ml-auto');
-    div.textContent = `🧑: ${text}`;
-  } else {
-    div.classList.add('bg-gray-600', 'text-white', 'mr-auto');
-    div.textContent = `🤖: ${text}`;
-  }
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function ownBrainResponse(text) {
-  const lower = text.toLowerCase().trim();
-  const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "নমস্কার", "সালাম"];
-  if (greetings.includes(lower)) {
-    return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot — সাহায্য করতে প্রস্তুত! 🤖";
-  }
-  if (lower.includes("তুমি কি পারো") || lower.includes("what can you do")) {
-    return "আমি তোমার Magic Robot! সহজ ভাষায় গুগল থেকে তথ্য এনে দিবো। যদি চাও, ছোট ছোট কোড টেমপ্লেটও বানিয়ে দিতে পারি! 🤖✨";
-  }
-  if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
-    return "আমার নাম Magic Robot — বন্ধুদের জন্য Magic। 😉";
-  }
-  if (lower.includes("তুমি কে") || lower.includes("who are you")) {
-    return "আমি Magic Robot, তোমার সহকারী।";
-  }
-  if (lower.includes("তোমার মালিক কে") || lower.includes("who is your owner")) {
-    return "আমার মালিক Rashed Khan।";
-  }
-  if (lower.includes("কেমন আছো") || lower.includes("how are you")) {
-    return "আমি ভালো আছি! তুমি কেমন আছো?";
-  }
-  if (lower.includes("ধন্যবাদ") || lower.includes("thanks")) {
-    return "তোমাকেও ধন্যবাদ! 😊";
-  }
-  if (lower.includes("টেমপ্লেট তৈরি করো") || lower.includes("কোড দাও") || lower.includes("template create") || lower.includes("give me code")) {
-    return generateBasicTemplate();
-  }
-  return null;
-}
-
-function generateBasicTemplate() {
-  return `আমি তোমার জন্য একটা সহজ ডাউনলোড সাইটের টেমপ্লেট তৈরি করলাম:
-
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Download Site</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-900 p-6">
-  <header class="max-w-4xl mx-auto flex justify-between items-center py-4">
-    <h1 class="text-3xl font-bold text-blue-600">Download Hub</h1>
-  </header>
-  <main class="max-w-4xl mx-auto mt-8">
-    <section class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-2xl font-semibold mb-4">Available Downloads</h2>
-      <ul>
-        <li class="mb-3">
-          <a href="#" class="text-blue-600 hover:underline">Awesome Software v1.0</a>
-          <p class="text-sm text-gray-600">Size: 20MB | Updated: 2025-08-16</p>
-        </li>
-        <li class="mb-3">
-          <a href="#" class="text-blue-600 hover:underline">Cool Game v2.3</a>
-          <p class="text-sm text-gray-600">Size: 150MB | Updated: 2025-07-20</p>
-        </li>
-      </ul>
-    </section>
-  </main>
-</body>
-</html>`;
-}
-
-async function fetchFromGoogle(query){
-  const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
-  try{
-    const res = await fetch(url);
-    const data = await res.json();
-    if(data.items && data.items.length > 0){
-      let answer = "আমি গুগলে খুঁজে পেয়েছি:\n\n";
-      data.items.slice(0, 3).forEach((item, i) => {
-        answer += `${i+1}. ${item.title}\n`;
-        let snippet = item.snippet.replace(/<\/?[^>]+(>|$)/g, "");
-        if(snippet.length > 200) snippet = snippet.substring(0, 200) + "...";
-        answer += `    ${snippet}\n`;
-        answer += `    লিঙ্ক: ${item.link}\n\n`;
-      });
-      return answer.trim();
+  function renderMessage(sender, text) {
+    const div = document.createElement("div");
+    div.classList.add("max-w-[80%]", "px-4", "py-2", "rounded-lg", "text-sm", "whitespace-pre-wrap", "break-words");
+    if (sender === "user") {
+      div.classList.add("bg-cyan-600", "text-white", "ml-auto");
+      div.textContent = `🧑: ${text}`;
     } else {
-      return "দুঃখিত, গুগলে তোমার প্রশ্নের কোনো ফলাফল পেলাম না।";
+      div.classList.add("bg-gray-600", "text-white", "mr-auto");
+      div.textContent = `🤖: ${text}`;
     }
-  }catch(e){
-    return "দুঃখিত, সার্চ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।";
-  }
-}
-
-async function processInput(text){
-  if(!text.trim()) return;
-  renderMessage('user', text);
-  input.value = "";
-
-  let reply = ownBrainResponse(text);
-  if(reply){
-    renderMessage('bot', reply);
-    return;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
   }
 
-  renderMessage('bot', "আমি গুগলে খুঁজছি... একটু সময় দাও।");
-  const googleReply = await fetchFromGoogle(text);
-  renderMessage('bot', googleReply);
-}
-
-sendBtn.addEventListener('click', () => {
-  processInput(input.value);
-});
-
-input.addEventListener('keypress', e => {
-  if(e.key === 'Enter'){
-    e.preventDefault();
-    processInput(input.value);
+  function ownBrainResponse(text) {
+    const lower = text.toLowerCase().trim();
+    const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "নমস্কার", "সালাম"];
+    if (greetings.includes(lower)) return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot।";
+    if (lower.includes("তুমি কি পারো")) return "আমি গুগল থেকে তথ্য আনতে পারি, তুমি চাও বলে দাও!";
+    if (lower.includes("তোমার নাম")) return "আমি Magic Robot, তোমার সহকারী।";
+    return null;
   }
-});
+
+  async function fetchFromGoogle(query) {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("HTTP error");
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        let output = "";
+        data.items.slice(0, 2).forEach((item, i) => {
+          output += `${i+1}. ${item.title}\n${item.snippet.replace(/<\/?[^>]+(>|$)/g, "")}\nLink: ${item.link}\n\n`;
+        });
+        return output;
+      } else {
+        return "গুগলে কিছু পাওয়া যায়নি।";
+      }
+    } catch (err) {
+      return "সার্চের সময় সমস্যা হয়েছে।";
+    }
+  }
+
+  async function processInput(text) {
+    if (!text.trim()) return;
+    renderMessage("user", text);
+    input.value = "";
+    const reply = ownBrainResponse(text);
+    if (reply) {
+      renderMessage("bot", reply);
+    } else {
+      renderMessage("bot", "গুগলে খুঁজছি... একটু অপেক্ষা করো...");
+      const googleReply = await fetchFromGoogle(text);
+      renderMessage("bot", googleReply);
+    }
+  }
+
+  sendBtn.addEventListener("click", () => processInput(input.value));
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") processInput(input.value);
+  });
 </script>
 
 </body>
