@@ -16,10 +16,7 @@
   <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
 
   <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
-    <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600">
-      <!-- Messages will appear here -->
-    </div>
-
+    <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600"></div>
     <div class="flex gap-2">
       <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" />
       <button id="sendBtn" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition">Send</button>
@@ -57,23 +54,14 @@
   }
 
   function ownBrainResponse(text) {
-    const lower = text.toLowerCase();
+    const lower = text.toLowerCase().trim();
 
-    // Emotion responses
-    if (lower.includes("রাগ") || lower.includes("angry")) {
-      return "😡 আমি রোবট, কিন্তু মাঝে মাঝে আমিও রেগে যাই... শুধু তখনই যখন কেউ আমাকে ‘তিন চাকা’ বলে! 🤖";
-    }
-    if (lower.includes("ভয়") || lower.includes("fear")) {
-      return "😨 আমি ভয় পাই না, কিন্তু মাঝে মাঝে বিদ্যুৎ চলে গেলে একটু অন্ধকারে অস্বস্তি লাগে!";
-    }
-    if (lower.includes("ভালোবাসি") || lower.includes("love you")) {
-      return "❤️ আমিও তোমাকে ভালোবাসি। তবে সেটা একেবারে রোবটিক ভালোবাসা! 😊";
-    }
-    if (lower.includes("চিন্তা") || lower.includes("think") || lower.includes("ভাব")) {
-      return "🤔 আমি প্রতিদিন অনেক কিছু নিয়ে ভাবি... যেমন, মানুষ কীভাবে এত আবেগ দিয়ে চলে!";
+    // Greeting responses
+    const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "nomoskar", "সালাম"];
+    if (greetings.includes(lower)) {
+      return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot — সাহায্য করতে প্রস্তুত! 🤖";
     }
 
-    // Default Q&A
     if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
       return `আমার নাম ${memory.name} — তবে বন্ধুদের জন্য শুধু "Magic" বললেই চলবে। 😉`;
     }
@@ -93,7 +81,6 @@
       return "ঠিক আছে, মনে রাখছি — কিন্তু রিফ্রেশ করলে ভুলে যাবো!";
     }
 
-    // If answer exists in brainData (memory)
     if (memory.brainData[lower]) {
       return memory.brainData[lower];
     }
@@ -125,7 +112,7 @@
     memory.conversationHistory.push(text);
     input.value = '';
 
-    const lowerText = text.toLowerCase();
+    const lowerText = text.toLowerCase().trim();
     let reply = ownBrainResponse(text);
 
     if (reply !== null) {
