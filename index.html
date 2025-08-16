@@ -45,6 +45,7 @@ function renderMessage(sender, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// Magic Robot এর নিজের বুদ্ধি এবং কোড জেনারেটর
 function ownBrainResponse(text) {
   const lower = text.toLowerCase().trim();
   const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "নমস্কার", "সালাম"];
@@ -52,7 +53,7 @@ function ownBrainResponse(text) {
     return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot — সাহায্য করতে প্রস্তুত! 🤖";
   }
   if (lower.includes("তুমি কি পারো") || lower.includes("what can you do")) {
-    return "আমি তোমার Magic Robot! সহজ ভাষায় গুগল থেকে তথ্য এনে দিবো। যা জানতে চাও বলো! 🤖✨";
+    return "আমি তোমার Magic Robot! সহজ ভাষায় গুগল থেকে তথ্য এনে দিবো। যদি চাও, ছোট ছোট কোড টেমপ্লেটও বানিয়ে দিতে পারি! 🤖✨";
   }
   if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
     return "আমার নাম Magic Robot — বন্ধুদের জন্য Magic। 😉";
@@ -69,7 +70,46 @@ function ownBrainResponse(text) {
   if (lower.includes("ধন্যবাদ") || lower.includes("thanks")) {
     return "তোমাকেও ধন্যবাদ! 😊";
   }
+  // কোড টেমপ্লেট তৈরি করতে চাও কি?
+  if (lower.includes("টেমপ্লেট তৈরি করো") || lower.includes("কোড দাও") || lower.includes("template create") || lower.includes("give me code")) {
+    return generateBasicTemplate();
+  }
   return null;
+}
+
+// সহজ ডাউনলোড সাইটের বেসিক টেমপ্লেট
+function generateBasicTemplate() {
+  return `আমি তোমার জন্য একটা সহজ ডাউনলোড সাইটের টেমপ্লেট তৈরি করলাম:
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Download Site</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 p-6">
+  <header class="max-w-4xl mx-auto flex justify-between items-center py-4">
+    <h1 class="text-3xl font-bold text-blue-600">Download Hub</h1>
+  </header>
+  <main class="max-w-4xl mx-auto mt-8">
+    <section class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold mb-4">Available Downloads</h2>
+      <ul>
+        <li class="mb-3">
+          <a href="#" class="text-blue-600 hover:underline">Awesome Software v1.0</a>
+          <p class="text-sm text-gray-600">Size: 20MB | Updated: 2025-08-16</p>
+        </li>
+        <li class="mb-3">
+          <a href="#" class="text-blue-600 hover:underline">Cool Game v2.3</a>
+          <p class="text-sm text-gray-600">Size: 150MB | Updated: 2025-07-20</p>
+        </li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>`;
 }
 
 async function fetchFromGoogle(query){
@@ -84,7 +124,6 @@ async function fetchFromGoogle(query){
         answer += `${i+1}. ${item.title}\n`;
         // স্নিপেট থেকে HTML ট্যাগ সরিয়ে শুধু টেক্সট রাখছি
         let snippet = item.snippet.replace(/<\/?[^>]+(>|$)/g, "");
-        // খুব লম্বা হলে কেটে দিচ্ছি
         if(snippet.length > 200) snippet = snippet.substring(0, 200) + "...";
         answer += `    ${snippet}\n`;
         answer += `    লিঙ্ক: ${item.link}\n\n`;
