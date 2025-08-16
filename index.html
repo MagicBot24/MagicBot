@@ -1,124 +1,88 @@
-<body>
-  <div class="container">
-    <h1>Magic Bot ভাই</h1>
-    <div id="chat"></div>
-    <div id="input-area">
-      <input type="text" id="queryInput" placeholder="প্রশ্ন লিখুন..." autocomplete="off" />
-      <button onclick="searchMagicBot()">Send</button>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memory Bot + Google CSE with Tailwind CSS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google CSE Script -->
+  <script async src="https://cse.google.com/cse.js?cx=b7013f3574abc40c3"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+  <h1 class="text-3xl font-bold mb-6">Memory Bot + Google Search</h1>
+
+  <div class="w-full max-w-3xl bg-white rounded shadow p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Chat with Bot (API ছাড়া)</h2>
+    <div id="chat" class="border border-gray-300 rounded h-64 overflow-y-auto p-4 mb-4 bg-gray-50"></div>
+
+    <div class="flex space-x-2">
+      <input id="input" type="text" placeholder="Type your message..." class="flex-grow border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button id="sendBtn" class="bg-blue-600 text-white px-4 rounded hover:bg-blue-700">Send</button>
     </div>
   </div>
 
+  <div class="w-full max-w-3xl bg-white rounded shadow p-6">
+    <h2 class="text-xl font-semibold mb-4">Google Custom Search</h2>
+    <!-- Google CSE Search Box and Results -->
+    <div class="gcse-search"></div>
+  </div>
+
   <script>
-    const chatBox = document.getElementById("chat");
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
 
-    // ইউজারের মেসেজ যোগ করবে ঠিক আগের মত
-    function appendUserMessage(text) {
-      const div = document.createElement("div");
-      div.className = "message user";
-      div.textContent = text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    // Load saved conversation from localStorage
+    let conversation = JSON.parse(localStorage.getItem('conversation')) || [];
 
-    // Bot এর মেসেজ আস্তে আস্তে দিয়ে দেবে + র‍্যান্ডম স্টাইল যুক্ত
-    async function appendBotMessage(text) {
-      // মেসেজের বেসিক div বানাও
-      const div = document.createElement("div");
-      div.className = "message bot";
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // কোড ব্লক টুকরা ধরার জন্য
-      const codeRegex = /```([\s\S]*?)```/g;
-      let parts = text.split(codeRegex);
-
-      // ফন্ট সাইজ, প্যাডিং আর রেডিয়াসের সম্ভাব্য মান
-      const fontSizes = ["0.9rem", "1rem", "1.1rem", "1.2rem", "1.3rem"];
-      const paddings = ["10px 15px", "12px 18px", "14px 20px", "16px 22px"];
-      const borderRadius = ["12px", "16px", "18px", "20px"];
-
-      for (let i = 0; i < parts.length; i++) {
-        if (i % 2 === 1) {
-          // কোড ব্লক
-          const pre = document.createElement("pre");
-          pre.className = "code-block";
-          const code = document.createElement("code");
-          code.textContent = parts[i];
-          pre.appendChild(code);
-
-          const copyBtn = document.createElement("button");
-          copyBtn.className = "copy-btn";
-          copyBtn.textContent = "Copy";
-          copyBtn.onclick = () => navigator.clipboard.writeText(parts[i]);
-          pre.appendChild(copyBtn);
-
-          div.appendChild(pre);
-        } else {
-          // সাধারণ টেক্সট - আস্তে আস্তে যোগ করবো
-          await typeTextWithStyle(div, parts[i], fontSizes, paddings, borderRadius);
-        }
-      }
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // আস্তে আস্তে লেখার ফাংশন + র‍্যান্ডম সাইজিং
-    function typeTextWithStyle(container, text, fontSizes, paddings, borderRadius) {
-      return new Promise((resolve) => {
-        let i = 0;
-        const span = document.createElement("span");
-
-        // র‍্যান্ডম সাইজ পিক করে বসানো
-        span.style.fontSize = fontSizes[Math.floor(Math.random() * fontSizes.length)];
-        span.style.padding = paddings[Math.floor(Math.random() * paddings.length)];
-        span.style.borderRadius = borderRadius[Math.floor(Math.random() * borderRadius.length)];
-
-        container.appendChild(span);
-
-        function type() {
-          if (i < text.length) {
-            span.textContent += text.charAt(i);
-            i++;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            setTimeout(type, 25 + Math.random() * 50); // random typing speed 25-75ms
-          } else {
-            resolve();
-          }
-        }
-        type();
+    function renderChat() {
+      chat.innerHTML = '';
+      conversation.forEach(({sender, text}) => {
+        const div = document.createElement('div');
+        div.classList.add('mb-3', 'p-2', 'rounded', sender === 'user' ? 'bg-blue-100 text-blue-900 self-end' : 'bg-green-100 text-green-900 self-start');
+        div.textContent = (sender === 'user' ? 'You: ' : 'Bot: ') + text;
+        chat.appendChild(div);
       });
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    // Magic Bot এর মেসেজ, তোমার কন্ডিশনের জন্য সিমুলেটেড র‍্যান্ডম রেসপন্স
-    const randomReplies = [
-      "হ্যালো! তোমার প্রশ্নের উত্তর দেবো আস্তে আস্তে।",
-      "আজকের আবহাওয়া খুব ভালো লাগছে, তাই একটু মজার সাইজে বললাম।",
-      "এই রকম একটা র্যান্ডম সাইজের জবাব দেয়া কি তোমার পছন্দ?",
-      "আমি Magic Bot ভাই, আস্তে আস্তে কথা বলি।",
-      "তোমার প্রশ্নটা আবার বলো, আমি সবার চাইতে আলাদা উত্তর দিবো!",
-      "কোড ব্লকও দেখাতে পারি, চাইলে বলো।",
-      "এবার একটু ফানি ফানি সাইজে জবাব দিলাম।",
-    ];
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      conversation.push({ sender: 'user', text });
+      input.value = '';
 
-    async function searchMagicBot() {
-      const query = document.getElementById("queryInput").value.trim();
-      if (!query) return;
+      const botReply = generateBotReply(text);
+      conversation.push({ sender: 'bot', text: botReply });
 
-      appendUserMessage(query);
-
-      // আস্তে আস্তে টাইপিং ইফেক্ট দিতে একটু ডিলে দিয়ে বার্তা দেখাবো
-      await appendBotMessage("typing...");
-
-      // "typing..." বার্তা মুছে ফেলো
-      chatBox.lastChild.remove();
-
-      // র‍্যান্ডম রিপ্লাই বেছে নাও
-      const reply = randomReplies[Math.floor(Math.random() * randomReplies.length)];
-
-      // আস্তে আস্তে রিপ্লাই দেখাও
-      await appendBotMessage(reply);
-
-      document.getElementById("queryInput").value = "";
+      saveConversation();
+      renderChat();
     }
+
+    // Simple bot logic without API
+    function generateBotReply(inputText) {
+      if (/remember/i.test(inputText)) {
+        const userMsgs = conversation.filter(m => m.sender === 'user').map(m => m.text).join('; ');
+        return `I remember you said: "${userMsgs}"`;
+      }
+      if (/hello|hi/i.test(inputText)) return "Hello! How can I help you?";
+      if (/how are you/i.test(inputText)) return "I'm just a simple bot, but I'm fine!";
+      if (/search/i.test(inputText)) return "Please use the Google Search box below for searching.";
+      return "Sorry, I don't understand well yet. But I remember what you say!";
+    }
+
+    function saveConversation() {
+      localStorage.setItem('conversation', JSON.stringify(conversation));
+    }
+
+    renderChat();
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
   </script>
 </body>
 </html>
