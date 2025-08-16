@@ -3,96 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Magic Robot - সহজ গল্পে Google Search</title>
+  <title>Magic Robot - Google Search Bot</title>
+
+  <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
     };
   </script>
+
+  <!-- Google Custom Search Engine (CSE) -->
+  <script async src="https://cse.google.com/cse.js?cx=b7013f3574abc40c3"></script>
+
+  <style>
+    /* গুগল সিএসই স্টাইল সামান্য কাস্টমাইজ */
+    .gcse-search {
+      background-color: #1f2937;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    input.gsc-input {
+      background-color: #111827 !important;
+      color: white !important;
+    }
+    input.gsc-search-button {
+      background-color: #06b6d4 !important;
+      color: white !important;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center p-6">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-6">
 
-  <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
+  <h1 class="text-3xl font-bold text-cyan-400 mb-6">🔍 Magic Robot</h1>
 
-  <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
-    <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600"></div>
-    <div class="flex gap-2">
-      <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" />
-      <button id="sendBtn" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition">Send</button>
-    </div>
+  <!-- সার্চ বক্স ও রেজাল্ট -->
+  <div class="w-full max-w-3xl bg-gray-800 rounded-xl p-6 shadow-lg space-y-4">
+    <p class="text-cyan-200 mb-2">আপনার প্রশ্ন লিখুন নিচে 👇</p>
+    <div class="gcse-search"></div>
   </div>
 
-<script>
-  const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
-  const CSE_ID = "b7013f3574abc40c3";
-
-  const chat = document.getElementById("chat");
-  const input = document.getElementById("input");
-  const sendBtn = document.getElementById("sendBtn");
-
-  function renderMessage(sender, text) {
-    const div = document.createElement("div");
-    div.classList.add("max-w-[80%]", "px-4", "py-2", "rounded-lg", "text-sm", "whitespace-pre-wrap", "break-words");
-    if (sender === "user") {
-      div.classList.add("bg-cyan-600", "text-white", "ml-auto");
-      div.textContent = `🧑: ${text}`;
-    } else {
-      div.classList.add("bg-gray-600", "text-white", "mr-auto");
-      div.textContent = `🤖: ${text}`;
-    }
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-  }
-
-  function ownBrainResponse(text) {
-    const lower = text.toLowerCase().trim();
-    const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "নমস্কার", "সালাম"];
-    if (greetings.includes(lower)) return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot।";
-    if (lower.includes("তুমি কি পারো")) return "আমি গুগল থেকে তথ্য আনতে পারি, তুমি চাও বলে দাও!";
-    if (lower.includes("তোমার নাম")) return "আমি Magic Robot, তোমার সহকারী।";
-    return null;
-  }
-
-  async function fetchFromGoogle(query) {
-    const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("HTTP error");
-      const data = await res.json();
-      if (data.items && data.items.length > 0) {
-        let output = "";
-        data.items.slice(0, 2).forEach((item, i) => {
-          output += `${i+1}. ${item.title}\n${item.snippet.replace(/<\/?[^>]+(>|$)/g, "")}\nLink: ${item.link}\n\n`;
-        });
-        return output;
-      } else {
-        return "গুগলে কিছু পাওয়া যায়নি।";
-      }
-    } catch (err) {
-      return "সার্চের সময় সমস্যা হয়েছে।";
-    }
-  }
-
-  async function processInput(text) {
-    if (!text.trim()) return;
-    renderMessage("user", text);
-    input.value = "";
-    const reply = ownBrainResponse(text);
-    if (reply) {
-      renderMessage("bot", reply);
-    } else {
-      renderMessage("bot", "গুগলে খুঁজছি... একটু অপেক্ষা করো...");
-      const googleReply = await fetchFromGoogle(text);
-      renderMessage("bot", googleReply);
-    }
-  }
-
-  sendBtn.addEventListener("click", () => processInput(input.value));
-  input.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") processInput(input.value);
-  });
-</script>
+  <!-- Footer -->
+  <footer class="mt-10 text-gray-400 text-sm">
+    Created by Rashed Khan | Powered by Google CSE
+  </footer>
 
 </body>
 </html>
