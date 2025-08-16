@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Magic Robot</title>
+  <title>Magic Robot with Google Search</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -13,13 +13,20 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center p-6">
 
-  <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
+  <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot with Google Search</h1>
 
   <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
     <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600"></div>
+
     <div class="flex gap-2">
       <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white" />
       <button id="sendBtn" class="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition">Send</button>
+    </div>
+
+    <!-- Google Custom Search official embed -->
+    <div class="mt-6">
+      <script async src="https://cse.google.com/cse.js?cx=b7013f3574abc40c3"></script>
+      <div class="gcse-search"></div>
     </div>
   </div>
 
@@ -31,19 +38,20 @@
   const input = document.getElementById('input');
   const sendBtn = document.getElementById('sendBtn');
 
+  // Magic Robot memory & conversation storage
   const memory = {
     owner: "Rashed Khan",
     name: "Magic Robot",
-    conversationHistory: [],
-    brainData: {}
+    brainData: {},
+    conversationHistory: []
   };
 
   // Load memory from localStorage
   function loadMemory() {
-    const storedBrain = localStorage.getItem('magicRobotBrain');
-    if (storedBrain) {
+    const stored = localStorage.getItem('magicRobotBrain');
+    if (stored) {
       try {
-        memory.brainData = JSON.parse(storedBrain);
+        memory.brainData = JSON.parse(stored);
       } catch {
         memory.brainData = {};
       }
@@ -55,6 +63,7 @@
     localStorage.setItem('magicRobotBrain', JSON.stringify(memory.brainData));
   }
 
+  // Render a chat message on UI
   function renderMessage(sender, text) {
     const div = document.createElement('div');
     div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
@@ -67,7 +76,6 @@
     }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    return div;
   }
 
   // Own brain with fixed Q&A + memory recall
@@ -97,7 +105,19 @@
       return "আরে না না, তোমাকেই ধন্যবাদ বলার কথা! 😊";
     }
     if (lower.includes("মনে রেখো") || lower.includes("remember")) {
-      return "ঠিক আছে, মনে রাখছি — কিন্তু রিফ্রেশ করলে ভুলে যাবো!";
+      const rememberText = text.split(/মনে রেখো|remember/i)[1]?.trim();
+      if (rememberText) {
+        // Add to brain data (key-value)
+        const [key, ...valueParts] = rememberText.split("=");
+        if (key && valueParts.length > 0) {
+          const val = valueParts.join("=").trim();
+          memory.brainData[key.toLowerCase().trim()] = val;
+          saveMemory();
+          return `ঠিক আছে, আমি মনে রেখেছি "${key.trim()}" এর মান "${val}"।`;
+        }
+        return "মনে রাখতে হলে 'মনে রেখো key = value' এই ফরম্যাটে বলো। উদাহরণ: মনে রেখো তোমার রঙ = নীল";
+      }
+      return "কি মনে রাখতে হবে বলো তো!";
     }
 
     // Check memory for stored answers
@@ -108,52 +128,55 @@
     return null;
   }
 
-  async function fetchFromGoogle(query) {
+  // Google Custom Search API call (fetch)
+  async function fetchFromGoogleAPI(query) {
     const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
     try {
       const res = await fetch(url);
+      if (!res.ok) throw new Error("Google API Error");
       const data = await res.json();
       if (data.items && data.items.length > 0) {
-        return data.items[0].snippet;
+        // Return first 3 result snippets concatenated
+        return data.items.slice(0, 3).map(item => `• ${item.title}: ${item.snippet}`).join("\n\n");
       } else {
-        return "দুঃখিত, গুগল থেকে কিছুই খুঁজে পাইনি। 😓";
+        return "কিছু পাওয়া যায়নি Google সার্চে।";
       }
     } catch (err) {
-      console.error(err);
-      return "ওহ না! গুগল কিছুক্ষণ ধরে চুপ করে আছে। 😶";
+      return "Google সার্চে সমস্যা হয়েছে, পরে আবার চেষ্টা করো।";
     }
   }
 
-  async function sendMessage() {
+  // Handle user input & respond
+  async function handleUserMessage(text) {
+    renderMessage('user', text);
+
+    // Try own brain first
+    let reply = ownBrainResponse(text);
+    if (reply) {
+      renderMessage('bot', reply);
+      return;
+    }
+
+    // Otherwise try Google API search
+    renderMessage('bot', "আমি গুগলে খুঁজছি... একটু সময় দাও।");
+    const googleReply = await fetchFromGoogleAPI(text);
+    renderMessage('bot', googleReply);
+  }
+
+  // Init
+  loadMemory();
+
+  sendBtn.addEventListener('click', () => {
     const text = input.value.trim();
     if (!text) return;
-
-    renderMessage('user', text);
-    memory.conversationHistory.push(text);
+    handleUserMessage(text);
     input.value = '';
+  });
 
-    const lowerText = text.toLowerCase().trim();
-    let reply = ownBrainResponse(text);
-
-    if (reply !== null) {
-      renderMessage('bot', reply);
-    } else {
-      const loading = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
-      const googleReply = await fetchFromGoogle(text);
-
-      // Save to memory (learn from Google)
-      memory.brainData[lowerText] = googleReply;
-      saveMemory();
-
-      loading.textContent = `🤖: ${googleReply}`;
-    }
-  }
-
-  window.onload = loadMemory;
-
-  sendBtn.addEventListener('click', sendMessage);
   input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') {
+      sendBtn.click();
+    }
   });
 </script>
 
