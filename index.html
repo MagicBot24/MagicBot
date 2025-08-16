@@ -38,7 +38,7 @@
     owner: "Rashed Khan",
     name: "Magic Robot",
     conversationHistory: [],
-    brainData: {}  // এখানে নতুন তথ্য সংরক্ষণ হবে
+    brainData: {}  // নতুন তথ্য এখানে থাকবে
   };
 
   function renderMessage(sender, text) {
@@ -53,6 +53,7 @@
     }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+    return div; // element return করলাম যাতে পরে আপডেট করা যায়
   }
 
   function ownBrainResponse(text) {
@@ -123,21 +124,15 @@
     if (reply !== null) {
       renderMessage('bot', reply);
     } else {
-      renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
+      const loadingMsg = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
 
       const googleReply = await fetchFromGoogle(text);
 
-      // গুগল থেকে পাওয়া নতুন তথ্য নিজের ব্রেইনে সংরক্ষণ করো
-      // নিচে পুরো প্রশ্নটাকেই key হিসেবে রেখে দিলাম, চাইলে পরিবর্তন করতে পারো
+      // গুগল থেকে পাওয়া নতুন তথ্য নিজের ব্রেইনে সংরক্ষণ করো (key হিসেবে ছোট হাতের পুরো প্রশ্ন)
       memory.brainData[text.toLowerCase()] = googleReply;
 
       // আগের “গুগল খুঁজছি” বার্তাটি আপডেট করো নতুন জ্ঞানে
-      const botMsgs = chat.querySelectorAll('div.bg-gray-600');
-      if (botMsgs.length > 0) {
-        botMsgs[botMsgs.length - 1].textContent = `🤖: ${googleReply}`;
-      } else {
-        renderMessage('bot', googleReply);
-      }
+      loadingMsg.textContent = `🤖: ${googleReply}`;
     }
   }
 
