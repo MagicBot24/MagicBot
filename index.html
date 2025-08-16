@@ -3,90 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Memory Bot (GPT Style)</title>
+  <title>Smart Bot (Google Powered)</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
 
-  <h1 class="text-3xl font-bold text-blue-700 mb-6">🧠 স্মার্ট মেমরি বট</h1>
+  <h1 class="text-3xl font-bold text-blue-700 mb-6">🤖 Google Powered স্মার্ট বট</h1>
 
-  <!-- Chat Container -->
   <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 flex flex-col space-y-4">
     <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
       <!-- Messages will appear here -->
     </div>
 
     <div class="flex gap-2">
-      <input id="input" type="text" placeholder="Type something..." class="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <input id="input" type="text" placeholder="আপনার প্রশ্ন লিখুন..." class="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
       <button id="sendBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Send</button>
     </div>
   </div>
 
   <script>
+    const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
+    const CSE_ID = "b7013f3574abc40c3";
+
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
 
-    let conversation = JSON.parse(localStorage.getItem('conversation')) || [];
-
-    function renderChat() {
-      chat.innerHTML = '';
-      conversation.forEach(({ sender, text }) => {
-        const msgDiv = document.createElement('div');
-        msgDiv.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
-
-        if (sender === 'user') {
-          msgDiv.classList.add('bg-blue-500', 'text-white', 'ml-auto');
-          msgDiv.textContent = `🧑: ${text}`;
-        } else {
-          msgDiv.classList.add('bg-gray-200', 'text-gray-900', 'mr-auto');
-          msgDiv.textContent = `🤖: ${text}`;
-        }
-
-        chat.appendChild(msgDiv);
-      });
+    function renderMessage(sender, text) {
+      const div = document.createElement('div');
+      div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
+      if (sender === 'user') {
+        div.classList.add('bg-blue-500', 'text-white', 'ml-auto');
+        div.textContent = `🧑: ${text}`;
+      } else {
+        div.classList.add('bg-gray-200', 'text-gray-900', 'mr-auto');
+        div.textContent = `🤖: ${text}`;
+      }
+      chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function sendMessage() {
+    async function fetchFromGoogle(query) {
+      const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.items && data.items.length > 0) {
+          return data.items[0].snippet;
+        } else {
+          return "আমি গুগলে কিছুই পাইনি। আরেকবার চেষ্টা করো।";
+        }
+      } catch (err) {
+        console.error(err);
+        return "দুঃখিত, গুগল থেকে তথ্য আনতে সমস্যা হয়েছে।";
+      }
+    }
+
+    async function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
-
-      conversation.push({ sender: 'user', text });
+      renderMessage('user', text);
       input.value = '';
 
-      const botReply = generateBotReply(text);
-      conversation.push({ sender: 'bot', text: botReply });
+      renderMessage('bot', "গুগলে খুঁজে দেখছি...");
 
-      saveConversation();
-      renderChat();
-    }
-
-    function generateBotReply(inputText) {
-      // Simple reply logic
-      if (/remember/i.test(inputText)) {
-        const userMsgs = conversation.filter(m => m.sender === 'user').map(m => m.text).join('; ');
-        return `I remember you said: "${userMsgs}"`;
-      }
-
-      if (/hello|hi|হাই|হ্যালো/i.test(inputText)) return "হ্যালো! কিভাবে সাহায্য করতে পারি?";
-      if (/how are you|কেমন আছো/i.test(inputText)) return "আমি ভালো আছি, ধন্যবাদ! আপনি কেমন?";
-      if (/search|google|সার্চ/i.test(inputText)) return "আমি এখনো গুগল সার্চ করতে পারি না। তবে ভবিষ্যতে শিখে নেবো! 😉";
-
-      return "আমি এখনো শেখার চেষ্টা করছি। কিন্তু তোমার কথা মনে রাখছি!";
-    }
-
-    function saveConversation() {
-      localStorage.setItem('conversation', JSON.stringify(conversation));
+      const answer = await fetchFromGoogle(text);
+      const lastMsg = chat.lastChild;
+      lastMsg.textContent = `🤖: ${answer}`;
     }
 
     sendBtn.addEventListener('click', sendMessage);
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') sendMessage();
     });
-
-    renderChat();
   </script>
-
 </body>
 </html>
