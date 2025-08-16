@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Magic Robot by Rashed Khan</title>
+  <title>Magic Robot - Smart & Google Powered Chatbot</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
@@ -12,7 +12,7 @@
 
   <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 flex flex-col space-y-4">
     <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-      <!-- Messages will appear here -->
+      <!-- Chat messages will appear here -->
     </div>
 
     <div class="flex gap-2">
@@ -21,115 +21,137 @@
     </div>
   </div>
 
-  <script>
-    const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
-    const CSE_ID = "b7013f3574abc40c3";
+<script>
+  const API_KEY = "AIzaSyCb2Q72UY_t3HB9eOuWo0L5jo5K-LmKCJc";
+  const CSE_ID = "b7013f3574abc40c3";
 
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
-    const sendBtn = document.getElementById('sendBtn');
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
 
-    let memory = {
-      name: "Magic Robot",
-      owner: "Rashed Khan",
-    };
+  // Bot memory for the session (reset on reload)
+  let memory = {
+    owner: "Rashed Khan",
+    name: "Magic Robot",
+    conversationHistory: []
+  };
 
-    function renderMessage(sender, text) {
-      const div = document.createElement('div');
-      div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
-      if (sender === 'user') {
-        div.classList.add('bg-blue-500', 'text-white', 'ml-auto');
-        div.textContent = `🧑: ${text}`;
+  function renderMessage(sender, text) {
+    const div = document.createElement('div');
+    div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
+    if (sender === 'user') {
+      div.classList.add('bg-blue-500', 'text-white', 'ml-auto');
+      div.textContent = `🧑: ${text}`;
+    } else {
+      div.classList.add('bg-gray-200', 'text-gray-900', 'mr-auto');
+      div.textContent = `🤖: ${text}`;
+    }
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // Simple NLP-like own brain responses
+  function ownBrainResponse(text) {
+    const lower = text.toLowerCase();
+
+    if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
+      return `আমার নাম ${memory.name}।`;
+    }
+    if (lower.includes("তুমি কে") || lower.includes("who are you")) {
+      return `আমি ${memory.name}, আমার মালিক ${memory.owner}। আমি তোমার সাহায্যে আছি।`;
+    }
+    if (lower.includes("তোমার মালিক কে") || lower.includes("who is your owner")) {
+      return `আমার মালিক ${memory.owner}।`;
+    }
+    if (lower.includes("কেমন আছো") || lower.includes("how are you")) {
+      return "আমি ভালো আছি, তোমার কথা শুনতে পেরে ভালো লাগছে!";
+    }
+    if (lower.includes("ধন্যবাদ") || lower.includes("thanks")) {
+      return "তোমাকে ধন্যবাদ! আরও কিছু জানতে চাও?";
+    }
+    if (lower.includes("মনে রেখো") || lower.includes("remember")) {
+      return "আমি তোমার কথা মনে রাখব।";
+    }
+    if (lower.includes("তুমি কি আমাকে চিনতে পারো") || lower.includes("do you remember me")) {
+      if(memory.conversationHistory.length > 0) {
+        return `হ্যাঁ, আমি তোমার কিছু কথা মনে রাখতে পারি, যেমন: "${memory.conversationHistory.slice(-3).join(", ")}"`;
       } else {
-        div.classList.add('bg-gray-200', 'text-gray-900', 'mr-auto');
-        div.textContent = `🤖: ${text}`;
-      }
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function setMemoryFromText(text) {
-      const nameMatch = text.match(/তোমার নাম (.+)/i);
-      if (nameMatch) {
-        memory.name = nameMatch[1].replace(/[।!?]/g, '').trim();
-        return `ঠিক আছে, এখন থেকে আমি "${memory.name}" নামে পরিচিত।`;
-      }
-
-      const ownerMatch = text.match(/তোমার মালিক (.+)/i);
-      if (ownerMatch) {
-        memory.owner = ownerMatch[1].replace(/[।!?]/g, '').trim();
-        return `ভাল কথা, আমার মালিক এখন "${memory.owner}"।`;
-      }
-
-      return null;
-    }
-
-    function getMemoryResponse(text) {
-      const lower = text.toLowerCase();
-
-      if (lower.includes("তোমার নাম কী") || lower.includes("তোমার নাম কি")) {
-        return `আমার নাম ${memory.name}।`;
-      }
-
-      if (lower.includes("তুমি কে") || lower.includes("তুমি কার তৈরি")) {
-        return `আমি ${memory.owner} এর তৈরি একটি বুদ্ধিমান রোবট, আমার নাম ${memory.name}।`;
-      }
-
-      if (lower.includes("তোমার মালিক কে") || lower.includes("তুমি কার")) {
-        return `আমার মালিক ${memory.owner}।`;
-      }
-
-      if (lower.includes("আমার নাম কি")) {
-        return `তুমি তো ${memory.owner} — আমার মালিক!`;
-      }
-
-      return null;
-    }
-
-    async function fetchFromGoogle(query) {
-      const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.items && data.items.length > 0) {
-          return data.items[0].snippet;
-        } else {
-          return "আমি গুগলে কিছুই পাইনি। আরেকবার চেষ্টা করো।";
-        }
-      } catch (err) {
-        console.error(err);
-        return "দুঃখিত, গুগল থেকে তথ্য আনতে সমস্যা হয়েছে।";
+        return "দুঃখিত, এখনো তোমার কথা মনে রাখিনি।";
       }
     }
+    // কোনো সহজ উত্তর না পেলে null রিটার্ন করো
+    return null;
+  }
 
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-      renderMessage('user', text);
-      input.value = '';
-
-      const memorySet = setMemoryFromText(text);
-      if (memorySet) {
-        renderMessage('bot', memorySet);
-        return;
+  // Decide whether to call Google or not
+  function shouldUseGoogle(text) {
+    const lower = text.toLowerCase();
+    const knownKeywords = [
+      "তোমার নাম", "who are you", "তুমি কে", "who is your owner",
+      "তোমার মালিক কে", "কেমন আছো", "how are you", "ধন্যবাদ", "thanks",
+      "মনে রেখো", "remember", "তুমি কি আমাকে চিনতে পারো", "do you remember me"
+    ];
+    for (const kw of knownKeywords) {
+      if (lower.includes(kw)) {
+        return false; // নিজের উত্তরে দিবে
       }
+    }
+    // বাকিগুলোতে গুগল ব্যবহার করবে
+    return true;
+  }
 
-      const memoryReply = getMemoryResponse(text);
-      if (memoryReply) {
-        renderMessage('bot', memoryReply);
-        return;
+  // Fetch from Google Custom Search API
+  async function fetchFromGoogle(query) {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        return data.items[0].snippet;
+      } else {
+        return "দুঃখিত, গুগল থেকে কোনো তথ্য পাওয়া যায়নি।";
       }
+    } catch (err) {
+      console.error(err);
+      return "দুঃখিত, গুগল থেকে তথ্য আনতে সমস্যা হয়েছে।";
+    }
+  }
 
+  // Handle sending message
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    renderMessage('user', text);
+    input.value = '';
+
+    // Save user message in memory
+    memory.conversationHistory.push(text);
+
+    // Try to answer from own brain first
+    const ownAnswer = ownBrainResponse(text);
+    if (ownAnswer !== null) {
+      renderMessage('bot', ownAnswer);
+      return;
+    }
+
+    // If own brain can’t answer, call google
+    if (shouldUseGoogle(text)) {
       renderMessage('bot', "একটু গুগলে খুঁজে দেখি...");
       const answer = await fetchFromGoogle(text);
-      const lastMsg = chat.lastChild;
-      lastMsg.textContent = `🤖: ${answer}`;
+      renderMessage('bot', answer);
+      // Save bot's answer in memory too
+      memory.conversationHistory.push(answer);
+    } else {
+      renderMessage('bot', "দুঃখিত, আমি এখনো পুরোপুরি বুঝতে পারছি না।");
     }
+  }
 
-    sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') sendMessage();
-    });
-  </script>
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+</script>
+
 </body>
 </html>
