@@ -38,6 +38,23 @@
     brainData: {}
   };
 
+  // লোকালস্টোরেজ থেকে মেমরি লোড
+  function loadMemory() {
+    const storedBrain = localStorage.getItem('magicRobotBrain');
+    if (storedBrain) {
+      try {
+        memory.brainData = JSON.parse(storedBrain);
+      } catch {
+        memory.brainData = {};
+      }
+    }
+  }
+
+  // লোকালস্টোরেজে মেমরি সেভ
+  function saveMemory() {
+    localStorage.setItem('magicRobotBrain', JSON.stringify(memory.brainData));
+  }
+
   function renderMessage(sender, text) {
     const div = document.createElement('div');
     div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
@@ -121,13 +138,16 @@
       const loading = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
       const googleReply = await fetchFromGoogle(text);
 
-      // Save to memory
+      // Save to memory and localStorage
       memory.brainData[lowerText] = googleReply;
+      saveMemory();
 
-      // Update loading message
       loading.textContent = `🤖: ${googleReply}`;
     }
   }
+
+  // পেজ লোড হলে মেমরি লোড করবে
+  window.onload = loadMemory;
 
   sendBtn.addEventListener('click', sendMessage);
   input.addEventListener('keydown', e => {
