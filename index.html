@@ -38,54 +38,49 @@
     brainData: {}
   };
 
-  // লোকালস্টোরেজ থেকে শেখা মেমরি লোড করা
+  // Load memory from localStorage
   function loadMemory() {
     const storedBrain = localStorage.getItem('magicRobotBrain');
     if (storedBrain) {
       try {
         memory.brainData = JSON.parse(storedBrain);
-      } catch (e) {
-        console.warn("লোকালস্টোরেজ থেকে মেমরি লোড করতে সমস্যা:", e);
+      } catch {
         memory.brainData = {};
       }
     }
   }
 
-  // শেখা মেমরি লোকালস্টোরেজে সেভ করা
+  // Save memory to localStorage
   function saveMemory() {
-    try {
-      localStorage.setItem('magicRobotBrain', JSON.stringify(memory.brainData));
-    } catch (e) {
-      console.warn("লোকালস্টোরেজে মেমরি সেভ করতে সমস্যা:", e);
-    }
+    localStorage.setItem('magicRobotBrain', JSON.stringify(memory.brainData));
   }
 
-  // চ্যাটে মেসেজ দেখানোর ফাংশন
   function renderMessage(sender, text) {
     const div = document.createElement('div');
     div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
     if (sender === 'user') {
       div.classList.add('bg-cyan-600', 'text-white', 'ml-auto');
-      div.innerText = `🧑: ${text}`;
+      div.textContent = `🧑: ${text}`;
     } else {
       div.classList.add('bg-gray-600', 'text-white', 'mr-auto');
-      div.innerText = `🤖: ${text}`;
+      div.textContent = `🤖: ${text}`;
     }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return div;
   }
 
-  // নিজের ব্রেন থেকে উত্তর চেক করা
+  // Own brain with fixed Q&A + memory recall
   function ownBrainResponse(text) {
     const lower = text.toLowerCase().trim();
 
-    // সহজ কিওয়ার্ড ভিত্তিক উত্তর
     const greetings = ["hi", "hello", "হাই", "হ্যালো", "hola", "hey", "nomoskar", "সালাম"];
     if (greetings.includes(lower)) {
       return "হ্যালো! কেমন আছো? আমি তোমার Magic Robot — সাহায্য করতে প্রস্তুত! 🤖";
     }
-
+    if (lower.includes("তুমি কি পারো") || lower.includes("what can you do")) {
+      return "আমি তোমার Magic Robot! আমি তোমার প্রশ্নের উত্তর দেব, গুগলে খুঁজে আনবো, আর শেখার চেষ্টা করব। তুমি যা চাও, বলো! 🤖✨";
+    }
     if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
       return `আমার নাম ${memory.name} — তবে বন্ধুদের জন্য শুধু "Magic" বললেই চলবে। 😉`;
     }
@@ -105,7 +100,7 @@
       return "ঠিক আছে, মনে রাখছি — কিন্তু রিফ্রেশ করলে ভুলে যাবো!";
     }
 
-    // ব্রেনডেটা থেকে উত্তর
+    // Check memory for stored answers
     if (memory.brainData[lower]) {
       return memory.brainData[lower];
     }
@@ -113,7 +108,6 @@
     return null;
   }
 
-  // গুগল থেকে ডাটা নিয়ে আসা
   async function fetchFromGoogle(query) {
     const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CSE_ID}&q=${encodeURIComponent(query)}`;
     try {
@@ -130,14 +124,6 @@
     }
   }
 
-  // মেমরি ট্রেন করার ফাংশন (গুগল থেকে শেখা তথ্য সংরক্ষণ)
-  function trainMemory(question, answer) {
-    const key = question.toLowerCase().trim();
-    memory.brainData[key] = answer;
-    saveMemory();
-  }
-
-  // মেইন ফাংশন — মেসেজ প্রক্রিয়া
   async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
@@ -146,7 +132,7 @@
     memory.conversationHistory.push(text);
     input.value = '';
 
-    // নিজস্ব ব্রেন থেকে খোঁজা
+    const lowerText = text.toLowerCase().trim();
     let reply = ownBrainResponse(text);
 
     if (reply !== null) {
@@ -155,13 +141,14 @@
       const loading = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
       const googleReply = await fetchFromGoogle(text);
 
-      trainMemory(text, googleReply); // শেখা
+      // Save to memory (learn from Google)
+      memory.brainData[lowerText] = googleReply;
+      saveMemory();
 
-      loading.innerText = `🤖: ${googleReply}`;
+      loading.textContent = `🤖: ${googleReply}`;
     }
   }
 
-  // পেজ লোডে মেমরি লোড করো
   window.onload = loadMemory;
 
   sendBtn.addEventListener('click', sendMessage);
