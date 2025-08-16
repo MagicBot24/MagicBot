@@ -13,12 +13,11 @@
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center p-6">
 
-  <!-- Header -->
   <h1 class="text-3xl font-bold text-cyan-400 mb-6">Magic Robot</h1>
 
   <div class="w-full max-w-2xl bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col space-y-4">
     <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-700 p-4 rounded-lg border border-gray-600">
-      <!-- Messages appear here -->
+      <!-- Messages will appear here -->
     </div>
 
     <div class="flex gap-2">
@@ -35,7 +34,7 @@
   const input = document.getElementById('input');
   const sendBtn = document.getElementById('sendBtn');
 
-  let memory = {
+  const memory = {
     owner: "Rashed Khan",
     name: "Magic Robot",
     conversationHistory: []
@@ -77,24 +76,14 @@
       return "ঠিক আছে, মনে রাখছি — কিন্তু রিফ্রেশ করলে ভুলে যাবো!";
     }
     if (lower.includes("তুমি কি আমাকে চিনতে পারো") || lower.includes("do you remember me")) {
-      if(memory.conversationHistory.length > 0) {
+      if (memory.conversationHistory.length > 0) {
         return `হ্যাঁ, একটু মনে পড়ছে... তুমি বলেছিলে "${memory.conversationHistory.slice(-1)[0]}"`;
       } else {
         return "আমার ডেটা খালি... তাই এখনো তোমাকে চিনতে পারছি না।";
       }
     }
 
-    return null;
-  }
-
-  function shouldUseGoogle(text) {
-    const lower = text.toLowerCase();
-    const knownKeywords = [
-      "তোমার নাম", "who are you", "তুমি কে", "who is your owner",
-      "তোমার মালিক কে", "কেমন আছো", "how are you", "ধন্যবাদ", "thanks",
-      "মনে রেখো", "remember", "তুমি কি আমাকে চিনতে পারো", "do you remember me"
-    ];
-    return !knownKeywords.some(kw => lower.includes(kw));
+    return null; // Not found in own brain
   }
 
   async function fetchFromGoogle(query) {
@@ -121,17 +110,18 @@
     memory.conversationHistory.push(text);
     input.value = '';
 
-    const reply = ownBrainResponse(text);
-    if (reply) {
+    let reply = ownBrainResponse(text);
+
+    if (reply !== null) {
       renderMessage('bot', reply);
     } else {
-      renderMessage('bot', "একটু অপেক্ষা করো, আমি এখন গুগলে খুঁজছি...");
-      const answer = await fetchFromGoogle(text);
+      renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
+      const googleReply = await fetchFromGoogle(text);
       const botMsgs = chat.querySelectorAll('div.bg-gray-600');
       if (botMsgs.length > 0) {
-        botMsgs[botMsgs.length - 1].textContent = `🤖: ${answer}`;
+        botMsgs[botMsgs.length - 1].textContent = `🤖: ${googleReply}`;
       } else {
-        renderMessage('bot', answer);
+        renderMessage('bot', googleReply);
       }
     }
   }
