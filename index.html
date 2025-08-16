@@ -38,7 +38,7 @@
     owner: "Rashed Khan",
     name: "Magic Robot",
     conversationHistory: [],
-    brainData: {}  // নতুন তথ্য এখানে থাকবে
+    brainData: {}
   };
 
   function renderMessage(sender, text) {
@@ -53,12 +53,27 @@
     }
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    return div; // element return করলাম যাতে পরে আপডেট করা যায়
+    return div;
   }
 
   function ownBrainResponse(text) {
     const lower = text.toLowerCase();
 
+    // Emotion responses
+    if (lower.includes("রাগ") || lower.includes("angry")) {
+      return "😡 আমি রোবট, কিন্তু মাঝে মাঝে আমিও রেগে যাই... শুধু তখনই যখন কেউ আমাকে ‘তিন চাকা’ বলে! 🤖";
+    }
+    if (lower.includes("ভয়") || lower.includes("fear")) {
+      return "😨 আমি ভয় পাই না, কিন্তু মাঝে মাঝে বিদ্যুৎ চলে গেলে একটু অন্ধকারে অস্বস্তি লাগে!";
+    }
+    if (lower.includes("ভালোবাসি") || lower.includes("love you")) {
+      return "❤️ আমিও তোমাকে ভালোবাসি। তবে সেটা একেবারে রোবটিক ভালোবাসা! 😊";
+    }
+    if (lower.includes("চিন্তা") || lower.includes("think") || lower.includes("ভাব")) {
+      return "🤔 আমি প্রতিদিন অনেক কিছু নিয়ে ভাবি... যেমন, মানুষ কীভাবে এত আবেগ দিয়ে চলে!";
+    }
+
+    // Default Q&A
     if (lower.includes("তোমার নাম") || lower.includes("what is your name")) {
       return `আমার নাম ${memory.name} — তবে বন্ধুদের জন্য শুধু "Magic" বললেই চলবে। 😉`;
     }
@@ -77,22 +92,13 @@
     if (lower.includes("মনে রেখো") || lower.includes("remember")) {
       return "ঠিক আছে, মনে রাখছি — কিন্তু রিফ্রেশ করলে ভুলে যাবো!";
     }
-    if (lower.includes("তুমি কি আমাকে চিনতে পারো") || lower.includes("do you remember me")) {
-      if (memory.conversationHistory.length > 0) {
-        return `হ্যাঁ, একটু মনে পড়ছে... তুমি বলেছিলে "${memory.conversationHistory.slice(-1)[0]}"`;
-      } else {
-        return "আমার ডেটা খালি... তাই এখনো তোমাকে চিনতে পারছি না।";
-      }
+
+    // If answer exists in brainData (memory)
+    if (memory.brainData[lower]) {
+      return memory.brainData[lower];
     }
 
-    // নিজের ব্রেইনে নতুন তথ্য খুঁজে পাওয়া
-    for (const question in memory.brainData) {
-      if (lower.includes(question)) {
-        return memory.brainData[question];
-      }
-    }
-
-    return null; // কিছু না পাওয়া গেলে
+    return null;
   }
 
   async function fetchFromGoogle(query) {
@@ -119,20 +125,20 @@
     memory.conversationHistory.push(text);
     input.value = '';
 
+    const lowerText = text.toLowerCase();
     let reply = ownBrainResponse(text);
 
     if (reply !== null) {
       renderMessage('bot', reply);
     } else {
-      const loadingMsg = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
-
+      const loading = renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
       const googleReply = await fetchFromGoogle(text);
 
-      // গুগল থেকে পাওয়া নতুন তথ্য নিজের ব্রেইনে সংরক্ষণ করো (key হিসেবে ছোট হাতের পুরো প্রশ্ন)
-      memory.brainData[text.toLowerCase()] = googleReply;
+      // Save to memory
+      memory.brainData[lowerText] = googleReply;
 
-      // আগের “গুগল খুঁজছি” বার্তাটি আপডেট করো নতুন জ্ঞানে
-      loadingMsg.textContent = `🤖: ${googleReply}`;
+      // Update loading message
+      loading.textContent = `🤖: ${googleReply}`;
     }
   }
 
