@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Smart Bot (Google Powered)</title>
+  <title>Magic Robot by Rashed Khan</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
 
-  <h1 class="text-3xl font-bold text-blue-700 mb-6">🤖 Google Powered স্মার্ট বট</h1>
+  <h1 class="text-3xl font-bold text-blue-700 mb-6">🤖 Magic Robot (by Rashed Khan)</h1>
 
   <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 flex flex-col space-y-4">
     <div id="chat" class="h-96 overflow-y-auto space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -29,6 +29,11 @@
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('sendBtn');
 
+    let memory = {
+      name: "Magic Robot",
+      owner: "Rashed Khan",
+    };
+
     function renderMessage(sender, text) {
       const div = document.createElement('div');
       div.classList.add('max-w-[80%]', 'px-4', 'py-2', 'rounded-lg', 'text-sm', 'whitespace-pre-wrap');
@@ -41,6 +46,44 @@
       }
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    function setMemoryFromText(text) {
+      const nameMatch = text.match(/তোমার নাম (.+)/i);
+      if (nameMatch) {
+        memory.name = nameMatch[1].replace(/[।!?]/g, '').trim();
+        return `ঠিক আছে, এখন থেকে আমি "${memory.name}" নামে পরিচিত।`;
+      }
+
+      const ownerMatch = text.match(/তোমার মালিক (.+)/i);
+      if (ownerMatch) {
+        memory.owner = ownerMatch[1].replace(/[।!?]/g, '').trim();
+        return `ভাল কথা, আমার মালিক এখন "${memory.owner}"।`;
+      }
+
+      return null;
+    }
+
+    function getMemoryResponse(text) {
+      const lower = text.toLowerCase();
+
+      if (lower.includes("তোমার নাম কী") || lower.includes("তোমার নাম কি")) {
+        return `আমার নাম ${memory.name}।`;
+      }
+
+      if (lower.includes("তুমি কে") || lower.includes("তুমি কার তৈরি")) {
+        return `আমি ${memory.owner} এর তৈরি একটি বুদ্ধিমান রোবট, আমার নাম ${memory.name}।`;
+      }
+
+      if (lower.includes("তোমার মালিক কে") || lower.includes("তুমি কার")) {
+        return `আমার মালিক ${memory.owner}।`;
+      }
+
+      if (lower.includes("আমার নাম কি")) {
+        return `তুমি তো ${memory.owner} — আমার মালিক!`;
+      }
+
+      return null;
     }
 
     async function fetchFromGoogle(query) {
@@ -65,8 +108,19 @@
       renderMessage('user', text);
       input.value = '';
 
-      renderMessage('bot', "গুগলে খুঁজে দেখছি...");
+      const memorySet = setMemoryFromText(text);
+      if (memorySet) {
+        renderMessage('bot', memorySet);
+        return;
+      }
 
+      const memoryReply = getMemoryResponse(text);
+      if (memoryReply) {
+        renderMessage('bot', memoryReply);
+        return;
+      }
+
+      renderMessage('bot', "একটু গুগলে খুঁজে দেখি...");
       const answer = await fetchFromGoogle(text);
       const lastMsg = chat.lastChild;
       lastMsg.textContent = `🤖: ${answer}`;
