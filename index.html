@@ -37,7 +37,8 @@
   const memory = {
     owner: "Rashed Khan",
     name: "Magic Robot",
-    conversationHistory: []
+    conversationHistory: [],
+    brainData: {}  // এখানে নতুন তথ্য সংরক্ষণ হবে
   };
 
   function renderMessage(sender, text) {
@@ -83,7 +84,14 @@
       }
     }
 
-    return null; // Not found in own brain
+    // নিজের ব্রেইনে নতুন তথ্য খুঁজে পাওয়া
+    for (const question in memory.brainData) {
+      if (lower.includes(question)) {
+        return memory.brainData[question];
+      }
+    }
+
+    return null; // কিছু না পাওয়া গেলে
   }
 
   async function fetchFromGoogle(query) {
@@ -116,7 +124,14 @@
       renderMessage('bot', reply);
     } else {
       renderMessage('bot', "🤖: একটু গুগলে খুঁজে দেখি...");
+
       const googleReply = await fetchFromGoogle(text);
+
+      // গুগল থেকে পাওয়া নতুন তথ্য নিজের ব্রেইনে সংরক্ষণ করো
+      // নিচে পুরো প্রশ্নটাকেই key হিসেবে রেখে দিলাম, চাইলে পরিবর্তন করতে পারো
+      memory.brainData[text.toLowerCase()] = googleReply;
+
+      // আগের “গুগল খুঁজছি” বার্তাটি আপডেট করো নতুন জ্ঞানে
       const botMsgs = chat.querySelectorAll('div.bg-gray-600');
       if (botMsgs.length > 0) {
         botMsgs[botMsgs.length - 1].textContent = `🤖: ${googleReply}`;
